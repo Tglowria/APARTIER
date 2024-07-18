@@ -1,10 +1,10 @@
-import { Router } from 'express';
-import passport from 'passport';
-import { googleAuth, googleAuthCallback } from '../controller/authController.js';
+const express = require('express');
+const passport = require('passport');
+const { signup, login } = require('../controller/authController.js');
 
-const router = Router();
+const router = express.Router();
 
-router.get('/google', googleAuth);
-router.get('/google/callback', passport.authenticate('google', { failureRedirect: '/' }), googleAuthCallback);
+router.get('/signup', signup);
+router.get('/login', login);
 
-export default router;
+module.exports = router

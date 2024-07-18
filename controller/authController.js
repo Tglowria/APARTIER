@@ -1,42 +1,101 @@
-import passport from 'passport';
-import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import jwt from 'jsonwebtoken';
-import { User } from '../database/models.js';
+const bcrypt = require("bcryptjs");
+const jwt = require('jsonwebtoken');
 
-passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: '/auth/google/callback',
-}, async (accessToken, refreshToken, profile, done) => {
+
+exports.signup = async (req, res) => {
     try {
-        let user = await User.findOne({ where: { email: profile.emails[0].value } });
-        if (!user) {
-            user = await User.create({ email: profile.emails[0].value, role: 'ROLE_USER' });
+        const { firstName, lastName, password, email, phoneNumber } = req.body;
+
+        if (!firstName || !lastName || !email || !password || !phoneNumber) {
+            return res.status(400).json({ message: "Please provide all required fields" });
         }
-        done(null, user);
-    } catch (error) {
-        done(error);
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
+        if (!passwordRegex.test(password)) {
+            return res.status(400).json({
+                message: "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character."
+            });
+        }
+
+    //  Check if the email is already in use
+    const [row] = await db.execute(
+      "SELECT email FROM User WHERE email=?",
+      [email]
+    );
+
+    if (row.length > 0) {
+      return res.status(400).json({
+        status: 400,
+        message: "The E-mail is already in use",
+      });
     }
-}));
 
-passport.serializeUser((user, done) => {
-    done(null, user.id);
-});
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-passport.deserializeUser(async (id, done) => {
-    try {
-        const user = await User.findByPk(id);
-        done(null, user);
-    } catch (error) {
-        done(error);
+         // Insert the user into the database
+    const user = await db.query(
+        "INSERT INTO User (firstName, lastName, email, phoneNumber, password, emailToken) VALUES (?, ?, ?, ?, ?)",
+        [firstName, lastName, email, phoneNumber, hashedPassword]
+      );
+  
+ // Prepare the response data
+ const responseData = {
+    id: user[0].insertId,
+    firstName,
+    lastName,
+    email,
+    phoneNumber,
+  };
+
+        const token = jwt.sign({ id: responseData.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+        return res.status(201).json({ message: "User saved successfully", token, responseData });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Error saving user", error: err.message });
     }
-});
-
-const googleAuth = passport.authenticate('google', { scope: ['profile', 'email'] });
-
-const googleAuthCallback = (req, res) => {
-    const token = jwt.sign({ id: req.user.id, role: req.user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.json({ token });
 };
 
-export { googleAuth, googleAuthCallback };
+exports.login = async (req, res) => {
+  try {
+      const { email, password } = req.body;
+
+      if (!email || !password) {
+          return res.status(400).json({ message: "Please provide email and password" });
+      }
+
+      // Retrieve user from the database based on email
+      const [users] = await db.execute(
+          "SELECT * FROM User WHERE email = ?",
+          [email]
+      );
+
+      if (users.length === 0) {
+          return res.status(401).json({ message: "Invalid email or password" });
+      }
+
+      const user = users[0];
+
+      // Check if the password matches
+      const passwordMatch = await bcrypt.compare(password, user.password);
+
+      if (!passwordMatch) {
+          return res.status(401).json({ message: "Invalid email or password" });
+      }
+
+
+      // Prepare response data (excluding sensitive info like password)
+      const responseData = {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          phoneNumber: user.phoneNumber,
+      };
+
+      return res.status(200).json({ message: "Login successful", token, responseData });
+  } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Error logging in", error: err.message });
+  }
+};

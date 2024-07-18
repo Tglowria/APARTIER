@@ -1,5 +1,5 @@
-import { Shortlet } from '../database/models.js';
-import { processPaymentWithFlutterwave } from '../services/paymentService.js'; 
+const express = require('express');
+const { processPaymentWithFlutterwave } = require('../services/paymentService.js'); 
 
 const getShortlets = async (req, res) => {
     const { page = 1, state } = req.query;
@@ -39,4 +39,4 @@ const countShortlets = async (req, res) => {
     res.json({ count });
 };
 
-export { getShortlets, createShortlet, bookShortlet, countShortlets };
+module.exports = { getShortlets, createShortlet, bookShortlet, countShortlets };

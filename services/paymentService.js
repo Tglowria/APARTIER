@@ -1,6 +1,6 @@
-import axios from 'axios';
-import dotenv from 'dotenv';
-import { Payment } from '../database/modelsFlutterwave.js';
+const axios = require ('axios');
+const dotenv = require('dotenv');
+
 
 dotenv.config();
 
@@ -49,4 +49,4 @@ const processPaymentWithFlutterwave = async (amount, currency, paymentOptions, c
     }
 };
 
-export { processPaymentWithFlutterwave };
+module.exports = { processPaymentWithFlutterwave };
