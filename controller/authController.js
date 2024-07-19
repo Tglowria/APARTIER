@@ -81,8 +81,7 @@ exports.login = async (req, res) => {
       if (!passwordMatch) {
           return res.status(401).json({ message: "Invalid email or password" });
       }
-      const token = jwt.sign({ id: responseData.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
+      
       // Prepare response data (excluding sensitive info like password)
       const responseData = {
           id: user.id,
@@ -90,8 +89,9 @@ exports.login = async (req, res) => {
           lastName: user.lastName,
           email: user.email,
           phoneNumber: user.phoneNumber,
-      };
-
+        };
+        const token = jwt.sign({ id: responseData.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        
       return res.status(200).json({ message: "Login successful", token, responseData });
   } catch (err) {
       console.error(err);
