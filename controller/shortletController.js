@@ -96,7 +96,7 @@ exports.bookShortlet = async (req, res) => {
     }
   };
  exports.filterShortletsByState = async (req, res) => {
-    const { state } = req.params;
+    const { state } = req.query;
     const { page = 1, limit = 10 } = req.query; // Default to page 1 and limit 10
     const offset = (page - 1) * limit;
 
