@@ -1,5 +1,5 @@
 const db = require('../database/db');
-const { processPaymentWithFlutterwave } = require('../services/paymentService.js'); 
+const { processPayment } = require('../services/paymentService.js'); 
 const cloudinary = require('../middleware/passportSetup.js');
 const { upload } = require('../middleware/multerConfig.js');
 

@@ -11,7 +11,7 @@ const processPayment = async (paymentDetails) => {
         tx_ref: `tx-${Date.now()}`,
         amount: paymentDetails.amount,
         currency: paymentDetails.currency,
-        redirect_url: 'https://your-redirect-url.com/success', // Replace with your actual redirect URL
+        redirect_url: 'https:/apartier.onrender.com', 
         customer: {
           email: paymentDetails.email,
           name: paymentDetails.fullname,

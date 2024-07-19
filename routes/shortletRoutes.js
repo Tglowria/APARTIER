@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.get('/available', authenticateJWT, getAllAvailableShortlets);
 router.post('/', authenticateJWT, authorizeRoles('ROLE_ADMIN'), upload.array('images', 2), create);
-router.post('/:id/book', authenticateJWT, bookShortlet);
+router.post('/book', authenticateJWT, bookShortlet);
 router.get('/state', authenticateJWT, filterShortletsByState);
 router.get('/', authenticateJWT, getAllShortlets);
 
