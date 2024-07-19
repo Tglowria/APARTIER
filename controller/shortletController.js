@@ -7,7 +7,16 @@ const { upload } = require('../middleware/multerConfig.js');
 
 exports.create = async (req, res) => {
     try {
+
+      const userId = req.header('userId');
+        const [user] = await db.query("SELECT * FROM User WHERE id = ?", [userId]);
+  
+        if (user.length === 0 || user[0].role === 'user') {
+          return res.status(403).json({ message: 'Access denied' });
+        }
+        
         const { apartmentName, state, numberOfRooms, address, amountPerNight } = req.body;
+        
 
         if (!apartmentName || !state || !numberOfRooms || !address || !amountPerNight) {
             return res.status(400).json({ message: "Please provide all required fields" });

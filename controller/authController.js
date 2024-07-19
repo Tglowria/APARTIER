@@ -99,3 +99,25 @@ exports.login = async (req, res) => {
       return res.status(500).json({ message: "Error logging in", error: err.message });
   }
 };
+
+exports.changeUserRoleToAdmin = async (req, res) => {
+    try {
+        const { userId } = req.body;
+
+        // Check if the user exists
+        const [user] = await db.execute("SELECT * FROM User WHERE id = ?", [userId]);
+        
+        if (user.length === 0) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Update the user's role to 'admin'
+        await db.execute("UPDATE User SET role = 'admin' WHERE id = ?", [userId]);
+
+        return res.status(200).json({ message: "User role updated to admin successfully" });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Error updating user role", error: err.message });
+    }
+};
+
