@@ -56,7 +56,7 @@ exports.bookShortlet = async (req, res) => {
     const { id, currency, email, phone_number } = req.body;
     try {
       // Check if the shortlet exists and is available
-      const [existingShortlet] = await db.query("SELECT * FROM Shortlet WHERE id = ? AND booked = 0", [id]);
+      const [existingShortlet] = await db.query("SELECT * FROM shortlet WHERE id = ? AND booked = 0", [id]);
       
       if (!existingShortlet) {
         return res.status(404).json({ message: "Shortlet not found or already booked" });
