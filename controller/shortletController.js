@@ -53,48 +53,61 @@ exports.create = async (req, res) => {
 };
 
 exports.bookShortlet = async (req, res) => {
-    const { id, currency, email, phone_number } = req.body;
-    try {
-      // Check if the shortlet exists and is available
-      const [existingShortlet] = await db.query("SELECT * FROM shortlets WHERE id = ? AND booked = 0", [id]);
-      
-      if (!existingShortlet) {
-        return res.status(404).json({ message: "Shortlet not found or already booked" });
-      }
-  
-      // Calculate the total amount for the booking
-      const totalAmount = existingShortlet.amountPerNight * existingShortlet.numberOfNights;
-  
-      // Payment details
-      const paymentDetails = {
-        amount: totalAmount,
-        currency,
-        email,
-        phone_number,
-        fullname: `${existingShortlet.apartmentName}`
-      };
-  
-      // Process payment using Flutterwave
-      const paymentResponse = await processPayment(paymentDetails);
-  
-      if (paymentResponse.status !== "success") {
-        return res.status(400).json({ message: "Payment failed", data: paymentResponse });
-      }
-  
-      // Update the shortlet to mark it as booked
-      await db.query("UPDATE shortlets SET booked = 1 WHERE id = ?", [id]);
-  
-      return res.status(200).json({ 
-        message: "Shortlet booked successfully", 
-        totalAmount,
-        paymentStatus: paymentResponse.status,
-        paymentData: paymentResponse
-      });
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ message: "Error booking shortlet", error: err.message });
+  const { id, currency, email, phone_number, numberOfNights } = req.body;
+  try {
+    // Check if the shortlet exists and is available
+    const [existingShortletRow] = await db.query("SELECT * FROM shortlets WHERE id = ? AND booked = 0", [id]);
+
+    if (!existingShortletRow || existingShortletRow.length === 0) {
+      return res.status(404).json({ message: "Shortlet not found or already booked" });
     }
-  };
+
+    const existingShortlet = existingShortletRow[0]; // Access the first (and presumably only) row
+    console.log("existingShortlet:", existingShortlet);
+
+    // Validate amountPerNight
+    if (!existingShortlet.amountPerNight || isNaN(existingShortlet.amountPerNight)) {
+      throw new Error("Invalid amountPerNight value");
+    }
+
+    // Calculate the total amount for the booking
+    const totalAmount = existingShortlet.amountPerNight * numberOfNights;
+    console.log("totalAmount:", totalAmount);
+    console.log("amountPerNight:", existingShortlet.amountPerNight);
+    console.log("numberOfNights:", numberOfNights);
+
+    // Payment details
+    const paymentDetails = {
+      amount: totalAmount,
+      currency,
+      email,
+      phone_number,
+      fullname: `${existingShortlet.apartmentName}`,
+      numberOfNights
+    };
+
+    // Process payment using Flutterwave
+    const paymentResponse = await processPayment(paymentDetails);
+
+    if (paymentResponse.status !== "success") {
+      return res.status(400).json({ message: "Payment failed", data: paymentResponse });
+    }
+
+    // Update the shortlet to mark it as booked
+    await db.query("UPDATE shortlets SET booked = 1 WHERE id = ?", [id]);
+
+    return res.status(200).json({ 
+      message: "Proceed To Make Payment", 
+      totalAmount,
+      paymentStatus: paymentResponse.status,
+      paymentData: paymentResponse
+    });
+  } catch (err) {
+    console.error("Error booking shortlet:", err);
+    return res.status(500).json({ message: "Error booking shortlet", error: err.message });
+  }
+};
+
  exports.filterShortletsByState = async (req, res) => {
     const { state } = req.query;
     const { page = 1, limit = 10 } = req.query; // Default to page 1 and limit 10

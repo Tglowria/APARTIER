@@ -29,10 +29,11 @@ const processPayment = async (paymentDetails) => {
       }
     );
 
-    console.log(err);
+    // console.log(err);
     return response.data;
   } catch (err) {
-    throw new Error(err.response ? err.response.data : err.message);
+    // throw new Error(err.response ? err.response.data : err.message);
+    console.log(err);
   }
 };
 
