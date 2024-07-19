@@ -4,7 +4,22 @@ const { signup, login } = require('../controller/authController.js');
 
 const router = express.Router();
 
-router.get('/signup', signup);
-router.get('/login', login);
+router.post('/signup', signup);
+router.post('/login', login);
 
-module.exports = router
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+router.get('/google/callback', 
+  passport.authenticate('google', { failureRedirect: '/login' }),
+  (req, res) => {
+    res.redirect('/');
+  }
+);
+
+// Logout
+router.get('/logout', (req, res) => {
+  req.logout();
+  res.redirect('/');
+});
+
+module.exports = router;

@@ -1,52 +1,37 @@
-const axios = require ('axios');
+const axios = require('axios');
 const dotenv = require('dotenv');
-
 
 dotenv.config();
 
-const flutterwaveBaseUrl = 'https://api.flutterwave.com/v3';
-const flutterwaveSecretKey = process.env.FLUTTERWAVE_SECRET_KEY;
-
-const processPaymentWithFlutterwave = async (amount, currency, paymentOptions, customer, redirectUrl, userId, shortletId) => {
-    try {
-        const txRef = `hooli-tx-${Date.now()}`;
-        const response = await axios.post(
-            `${flutterwaveBaseUrl}/payments`,
-            {
-                tx_ref: txRef,
-                amount,
-                currency,
-                payment_options: paymentOptions,
-                redirect_url: redirectUrl,
-                customer,
-                customizations: {
-                    title: 'Apartier Payment',
-                    description: 'Payment for booking a shortlet apartment',
-                },
-            },
-            {
-                headers: {
-                    Authorization: `Bearer ${flutterwaveSecretKey}`,
-                    'Content-Type': 'application/json',
-                },
-            }
-        );
-
-        const payment = await Payment.create({
-            txRef,
-            amount,
-            currency,
-            status: response.data.status,
-            userId,
-            shortletId,
-            paymentLink: response.data.data.link,
-        });
-
-        return response.data;
-    } catch (error) {
-        console.error('Payment processing error:', error.response.data);
-        throw new Error('Payment processing failed');
-    }
+const processPayment = async (paymentDetails) => {
+  try {
+    const response = await axios.post(
+      'https://api.flutterwave.com/v3/payments',
+      {
+        tx_ref: `tx-${Date.now()}`,
+        amount: paymentDetails.amount,
+        currency: paymentDetails.currency,
+        redirect_url: 'https://your-redirect-url.com/success', // Replace with your actual redirect URL
+        customer: {
+          email: paymentDetails.email,
+          name: paymentDetails.fullname,
+          phonenumber: paymentDetails.phone_number
+        },
+        customizations: {
+          title: 'Shortlet Booking Payment'
+        }
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.FLW_SECRET_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    return response.data;
+  } catch (err) {
+    throw new Error(err.response ? err.response.data : err.message);
+  }
 };
 
-module.exports = { processPaymentWithFlutterwave };
+module.exports = { processPayment };

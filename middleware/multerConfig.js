@@ -12,12 +12,7 @@ cloudinary.config({
 });
 
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'public/uploads');
-    },
-    filename: (req, file, cb) => {
-        cb(null, `${Date.now()}-${file.originalname}`);
-    },
+    
     fileFilter: (req, file, cb) => {
         const allowedExtensions = ['.jpg', '.jpeg', '.png', '.mp4', '.mov', '.avi'];
         const ext = path.extname(file.originalname);
@@ -32,5 +27,5 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-module.exports = { upload };
+module.exports = { upload, cloudinary };
 

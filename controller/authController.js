@@ -1,6 +1,6 @@
 const bcrypt = require("bcryptjs");
 const jwt = require('jsonwebtoken');
-
+const db = require('../database/db')
 
 exports.signup = async (req, res) => {
     try {
@@ -34,7 +34,7 @@ exports.signup = async (req, res) => {
 
          // Insert the user into the database
     const user = await db.query(
-        "INSERT INTO User (firstName, lastName, email, phoneNumber, password, emailToken) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO User (firstName, lastName, email, phoneNumber, password) VALUES (?, ?, ?, ?, ?)",
         [firstName, lastName, email, phoneNumber, hashedPassword]
       );
   
@@ -93,7 +93,7 @@ exports.login = async (req, res) => {
           phoneNumber: user.phoneNumber,
       };
 
-      return res.status(200).json({ message: "Login successful", token, responseData });
+      return res.status(200).json({ message: "Login successful", responseData });
   } catch (err) {
       console.error(err);
       return res.status(500).json({ message: "Error logging in", error: err.message });
