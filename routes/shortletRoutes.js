@@ -6,7 +6,7 @@ const { bookShortlet, getAllAvailableShortlets, create, filterShortletsByState, 
 const router = express.Router();
 
 router.get('/available', authenticateJWT, getAllAvailableShortlets);
-router.post('/', authenticateJWT, authorizeRoles('ROLE_ADMIN'), upload.array('images', 2), create);
+router.post('/', authenticateJWT, create);
 router.post('/book', authenticateJWT, bookShortlet);
 router.get('/state', authenticateJWT, filterShortletsByState);
 router.get('/', authenticateJWT, getAllShortlets);
