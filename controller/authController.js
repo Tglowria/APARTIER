@@ -47,9 +47,8 @@ exports.signup = async (req, res) => {
     phoneNumber,
   };
 
-        const token = jwt.sign({ id: responseData.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-        return res.status(201).json({ message: "User saved successfully", token, responseData });
+        return res.status(201).json({ message: "User saved successfully", responseData });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ message: "Error saving user", error: err.message });
@@ -82,7 +81,7 @@ exports.login = async (req, res) => {
       if (!passwordMatch) {
           return res.status(401).json({ message: "Invalid email or password" });
       }
-
+      const token = jwt.sign({ id: responseData.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
       // Prepare response data (excluding sensitive info like password)
       const responseData = {
@@ -93,7 +92,7 @@ exports.login = async (req, res) => {
           phoneNumber: user.phoneNumber,
       };
 
-      return res.status(200).json({ message: "Login successful", responseData });
+      return res.status(200).json({ message: "Login successful", token, responseData });
   } catch (err) {
       console.error(err);
       return res.status(500).json({ message: "Error logging in", error: err.message });
