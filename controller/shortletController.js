@@ -14,7 +14,7 @@ exports.create = async (req, res) => {
         if (user.length === 0 || user[0].role === 'user') {
           return res.status(403).json({ message: 'Access denied' });
         }
-        
+
         const { apartmentName, state, numberOfRooms, address, amountPerNight } = req.body;
         
 
@@ -82,7 +82,7 @@ exports.bookShortlet = async (req, res) => {
       }
   
       // Update the shortlet to mark it as booked
-      await db.query("UPDATE Shortlet SET booked = 1 WHERE id = ?", [id]);
+      await db.query("UPDATE shortlets SET booked = 1 WHERE id = ?", [id]);
   
       return res.status(200).json({ 
         message: "Shortlet booked successfully", 
